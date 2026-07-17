@@ -1,0 +1,9 @@
+<%- include('partials/head', { title: movie.title + ' — Locked' }) %>
+
+<section class="wrap locked-section">
+  <h1>🔒 Locked</h1>
+  <p>You haven't unlocked <strong><%= movie.title %></strong> yet.</p>
+  <a href="/buy/<%= movie.slug %>" class="btn">Unlock this movie</a>
+</section>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#221d19"/>
+      <stop offset="100%" stop-color="#12100e"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#bg)"/>
+  <rect x="24" y="24" width="352" height="552" fill="none" stroke="#cfa35c" stroke-width="2"/>
+  <circle cx="200" cy="230" r="56" fill="#b5442e"/>
+  <text x="200" y="246" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#f3ece4" text-anchor="middle">S4</text>
+  <text x="200" y="340" font-family="Georgia, serif" font-size="30" fill="#f3ece4" text-anchor="middle">Dil Jo Safar</text>
+  <text x="200" y="374" font-family="Arial, sans-serif" font-size="15" letter-spacing="3" fill="#a89a8d" text-anchor="middle">S4 ENTERTAINMENTS</text>
+</svg>

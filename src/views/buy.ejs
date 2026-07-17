@@ -1,0 +1,25 @@
+<%- include('partials/head', { title: 'Unlock ' + movie.title }) %>
+
+<section class="wrap buy-section">
+  <div class="buy-card">
+    <img class="buy-card__poster" src="<%= movie.poster_path %>" alt="<%= movie.title %> poster" />
+    <div class="buy-card__body">
+      <h1>Unlock <%= movie.title %></h1>
+      <p><%= movie.description %></p>
+      <p class="price">
+        <%= (movie.price_paise / 100).toFixed(2) %> <%= movie.currency %>
+        <span class="muted">one-time purchase, watch anytime on this site</span>
+      </p>
+      <p id="buy-error" class="alert alert--error" hidden></p>
+      <button id="pay-button" class="btn btn--full" data-slug="<%= movie.slug %>">
+        Pay &amp; unlock
+      </button>
+      <p class="hint">Payments are processed securely by Razorpay. We never see or store your card details.</p>
+    </div>
+  </div>
+</section>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="/public/js/buy.js"></script>
+
+<%- include('partials/footer') %>

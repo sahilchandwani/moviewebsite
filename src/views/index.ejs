@@ -1,0 +1,52 @@
+<%- include('partials/head', { title: 'Home' }) %>
+
+<section class="hero">
+  <div class="wrap hero__inner">
+    <div class="hero__text">
+      <p class="eyebrow">A Sindhi Entertainments Production</p>
+      <h1>S4 Entertainments</h1>
+      <p class="lede">
+        We make Sindhi cinema — stories of home, family and the diaspora, crafted
+        with care and shown exclusively right here.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap movies-section">
+  <h2>Now Showing</h2>
+  <div class="movie-grid">
+    <% movies.forEach(function(movie) { %>
+      <article class="movie-card">
+        <div class="movie-card__poster">
+          <img src="<%= movie.poster_path %>" alt="<%= movie.title %> poster" loading="lazy" />
+        </div>
+        <div class="movie-card__body">
+          <h3><%= movie.title %></h3>
+          <p class="movie-card__tagline"><%= movie.tagline %></p>
+          <p class="movie-card__meta"><%= movie.release_year %> &middot; <%= movie.duration_minutes %> min</p>
+          <p class="movie-card__desc"><%= movie.description %></p>
+          <% if (owned.has(movie.id)) { %>
+            <a href="/watch/<%= movie.slug %>" class="btn">Watch now</a>
+          <% } else { %>
+            <a href="/buy/<%= movie.slug %>" class="btn">
+              Unlock — <%= (movie.price_paise / 100).toFixed(2) %> <%= movie.currency %>
+            </a>
+          <% } %>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<section class="wrap about-section">
+  <h2>About S4 Entertainments</h2>
+  <p>
+    S4 Entertainments is a production house dedicated to telling Sindhi stories on
+    screen. Every film we release is hosted and played back exclusively on this
+    website — we don't publish our movies anywhere else — so the only way to watch
+    is right here, after unlocking it.
+  </p>
+</section>
+
+<%- include('partials/footer') %>

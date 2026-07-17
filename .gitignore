@@ -1,0 +1,15 @@
+node_modules/
+.env
+data/*.sqlite
+data/*.sqlite-journal
+data/*.sqlite-wal
+data/*.sqlite-shm
+data/sessions.sqlite
+media/source/*
+media/hls/*
+media/keys/*
+!media/source/.gitkeep
+!media/hls/.gitkeep
+!media/keys/.gitkeep
+*.log
+.DS_Store

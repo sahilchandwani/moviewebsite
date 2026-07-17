@@ -1,0 +1,36 @@
+{
+  "name": "s4-entertainments",
+  "version": "1.0.0",
+  "description": "S4 Entertainments - Sindhi movie production house showcase with secure in-site paywalled playback",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "prepare-movie": "bash scripts/prepare-video.sh",
+    "seed": "node scripts/seed-movie.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "better-sqlite3-session-store": "^0.1.0",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.7",
+    "csrf-csrf": "^3.0.6",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "express-session": "^1.18.0",
+    "express-validator": "^7.2.0",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "razorpay": "^2.9.4"
+  },
+  "devDependencies": {
+    "hls.js": "^1.6.16"
+  }
+}

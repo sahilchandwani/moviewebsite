@@ -1,0 +1,21 @@
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a href="/" class="brand">
+      <span class="brand__mark">S4</span>
+      <span class="brand__name">S4 Entertainments</span>
+    </a>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <% if (typeof user !== 'undefined' && user) { %>
+        <a href="/account">My Account</a>
+        <form action="/logout" method="post" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <button type="submit" class="link-button">Log out</button>
+        </form>
+      <% } else { %>
+        <a href="/login">Log in</a>
+        <a href="/register" class="btn btn--small">Sign up</a>
+      <% } %>
+    </nav>
+  </div>
+</header>

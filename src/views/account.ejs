@@ -1,0 +1,25 @@
+<%- include('partials/head', { title: 'My Account' }) %>
+
+<section class="wrap account-section">
+  <h1>My Account</h1>
+  <p><%= user.name %> &middot; <%= user.email %></p>
+
+  <h2>My Movies</h2>
+  <% if (!purchases.length) { %>
+    <p class="muted">You haven't unlocked any movies yet. <a href="/">Browse now showing</a>.</p>
+  <% } else { %>
+    <ul class="purchase-list">
+      <% purchases.forEach(function(p) { %>
+        <li class="purchase-list__item">
+          <span><%= p.title %></span>
+          <span class="tag tag--<%= p.status %>"><%= p.status %></span>
+          <% if (p.status === 'paid') { %>
+            <a href="/watch/<%= p.slug %>" class="btn btn--small">Watch</a>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+
+<%- include('partials/footer') %>

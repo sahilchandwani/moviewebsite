@@ -1,0 +1,25 @@
+<%- include('partials/head', { title: 'Watching: ' + movie.title }) %>
+
+<section class="wrap watch-section">
+  <h1><%= movie.title %></h1>
+  <div class="player-shell" id="player-shell" oncontextmenu="return false">
+    <video
+      id="player"
+      controls
+      controlsList="nodownload noremoteplayback"
+      disablePictureInPicture
+      playsinline
+    ></video>
+    <div class="watermark" aria-hidden="true"><%= user.email %></div>
+  </div>
+  <p class="hint">
+    This film is only available for playback on s4entertainments — please don't
+    share your account or attempt to download this stream.
+  </p>
+</section>
+
+<script src="/public/js/hls.min.js"></script>
+<script id="watch-data" data-src="/stream/<%= movie.slug %>/playlist.m3u8"></script>
+<script src="/public/js/watch.js"></script>
+
+<%- include('partials/footer') %>
