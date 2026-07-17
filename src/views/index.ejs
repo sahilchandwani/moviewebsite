@@ -1,43 +1,83 @@
 <%- include('partials/head', { title: 'Home' }) %>
 
-<section class="hero">
-  <div class="wrap hero__inner">
-    <div class="hero__text">
+<% if (movies.length) {
+  const feature = movies[0];
+  const rest = movies.slice(1);
+  const featureOwned = owned.has(feature.id);
+%>
+  <section class="feature-hero">
+    <div class="feature-hero__backdrop" style="background-image: url('<%= feature.poster_path %>')"></div>
+    <div class="feature-hero__scrim"></div>
+    <div class="wrap feature-hero__inner">
+      <img class="feature-hero__poster" src="<%= feature.poster_path %>" alt="<%= feature.title %> poster" />
+      <div class="feature-hero__text">
+        <p class="eyebrow">A Sindhi Entertainments Production</p>
+        <h1><%= feature.title %></h1>
+        <p class="feature-hero__tagline"><%= feature.tagline %></p>
+        <div class="feature-hero__meta">
+          <span class="chip"><%= feature.release_year %></span>
+          <span class="chip"><%= feature.duration_minutes %> min</span>
+          <span class="chip">Sindhi</span>
+          <span class="chip">Exclusive to S4</span>
+        </div>
+        <p class="feature-hero__desc"><%= feature.description %></p>
+        <div class="feature-hero__actions">
+          <% if (featureOwned) { %>
+            <a href="/watch/<%= feature.slug %>" class="btn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Watch now
+            </a>
+          <% } else { %>
+            <a href="/buy/<%= feature.slug %>" class="btn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17a2 2 0 0 0 2-2 2 2 0 0 0-2-2 2 2 0 0 0-2 2 2 2 0 0 0 2 2zm6-9h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM8.9 6A3.1 3.1 0 0 1 12 2.9 3.1 3.1 0 0 1 15.1 6v2H8.9z"/></svg>
+              Unlock — <%= (feature.price_paise / 100).toFixed(2) %> <%= feature.currency %>
+            </a>
+          <% } %>
+          <span class="feature-hero__price">One-time purchase &middot; watch anytime on this site</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <% if (rest.length) { %>
+    <section class="wrap movies-section">
+      <div class="section-heading"><h2>More from S4 Entertainments</h2></div>
+      <div class="movie-grid">
+        <% rest.forEach(function(movie) { %>
+          <article class="movie-card">
+            <div class="movie-card__poster">
+              <img src="<%= movie.poster_path %>" alt="<%= movie.title %> poster" loading="lazy" />
+            </div>
+            <div class="movie-card__body">
+              <h3><%= movie.title %></h3>
+              <p class="movie-card__tagline"><%= movie.tagline %></p>
+              <p class="movie-card__meta"><%= movie.release_year %> &middot; <%= movie.duration_minutes %> min</p>
+              <p class="movie-card__desc"><%= movie.description %></p>
+              <% if (owned.has(movie.id)) { %>
+                <a href="/watch/<%= movie.slug %>" class="btn btn--small">Watch now</a>
+              <% } else { %>
+                <a href="/buy/<%= movie.slug %>" class="btn btn--small">
+                  Unlock — <%= (movie.price_paise / 100).toFixed(2) %> <%= movie.currency %>
+                </a>
+              <% } %>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+<% } else { %>
+  <section class="hero">
+    <div class="wrap">
       <p class="eyebrow">A Sindhi Entertainments Production</p>
       <h1>S4 Entertainments</h1>
       <p class="lede">
         We make Sindhi cinema — stories of home, family and the diaspora, crafted
-        with care and shown exclusively right here.
+        with care and shown exclusively right here. New films coming soon.
       </p>
     </div>
-  </div>
-</section>
-
-<section class="wrap movies-section">
-  <h2>Now Showing</h2>
-  <div class="movie-grid">
-    <% movies.forEach(function(movie) { %>
-      <article class="movie-card">
-        <div class="movie-card__poster">
-          <img src="<%= movie.poster_path %>" alt="<%= movie.title %> poster" loading="lazy" />
-        </div>
-        <div class="movie-card__body">
-          <h3><%= movie.title %></h3>
-          <p class="movie-card__tagline"><%= movie.tagline %></p>
-          <p class="movie-card__meta"><%= movie.release_year %> &middot; <%= movie.duration_minutes %> min</p>
-          <p class="movie-card__desc"><%= movie.description %></p>
-          <% if (owned.has(movie.id)) { %>
-            <a href="/watch/<%= movie.slug %>" class="btn">Watch now</a>
-          <% } else { %>
-            <a href="/buy/<%= movie.slug %>" class="btn">
-              Unlock — <%= (movie.price_paise / 100).toFixed(2) %> <%= movie.currency %>
-            </a>
-          <% } %>
-        </div>
-      </article>
-    <% }) %>
-  </div>
-</section>
+  </section>
+<% } %>
 
 <section class="wrap about-section">
   <h2>About S4 Entertainments</h2>

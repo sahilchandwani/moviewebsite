@@ -1,7 +1,10 @@
 <%- include('partials/head', { title: 'Watching: ' + movie.title }) %>
 
 <section class="wrap watch-section">
-  <h1><%= movie.title %></h1>
+  <div class="watch-header">
+    <h1><%= movie.title %></h1>
+    <span class="chip"><%= movie.release_year %> &middot; <%= movie.duration_minutes %> min</span>
+  </div>
   <div class="player-shell" id="player-shell" oncontextmenu="return false">
     <video
       id="player"
