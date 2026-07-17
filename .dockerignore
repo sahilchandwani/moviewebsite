@@ -1,0 +1,12 @@
+node_modules
+.env
+.git
+.gitignore
+*.log
+data
+media/source/*
+media/hls/*
+media/keys/*
+!media/source/.gitkeep
+!media/hls/.gitkeep
+!media/keys/.gitkeep

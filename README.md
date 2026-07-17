@@ -118,10 +118,28 @@ scripts/
 
 ## Deploying
 
+### Quick preview link (no terminal needed)
+
+The repo includes a `Dockerfile` that installs `ffmpeg`, packages the sample
+movie, and seeds the database automatically during the build — so a host that
+builds from this Dockerfile gives you a working, clickable link with zero
+command-line steps. See the "getting a real link" walkthrough for the exact
+clicks (Render.com's free tier is the simplest option).
+
+This is a **preview environment**, not production: the free tier sleeps after
+inactivity (first visit after a while takes ~30-60s to wake up) and the
+disk can reset on redeploys, so accounts/purchases made there aren't durable.
+Good for reviewing the design and flow; not for taking real customer payments.
+
+### Real production hosting
+
 - Run behind HTTPS (a reverse proxy like nginx/Caddy, or your host's TLS
   termination) — `NODE_ENV=production` turns on HSTS, secure cookies, and an
   HTTP→HTTPS redirect based on `X-Forwarded-Proto`, so `app.set('trust proxy', 1)`
   assumes you're behind exactly one trusted proxy hop.
 - Set every secret in `.env` to a freshly generated value in production —
   don't reuse the dev placeholders.
-- The SQLite file at `data/app.sqlite` is your whole database; back it up.
+- The SQLite file at `data/app.sqlite` is your whole database, and
+  `media/hls` + `media/keys` are the actual movie files — all three need a
+  host with a **persistent disk** (not the free-tier ephemeral kind) and a
+  real backup plan before you rely on this for paying customers.
