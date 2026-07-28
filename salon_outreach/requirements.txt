@@ -1,0 +1,10 @@
+requests>=2.31.0
+python-dotenv>=1.0.1
+beautifulsoup4>=4.12.3
+anthropic>=0.40.0
+
+# Only needed if you want Stage 3 to create Gmail drafts automatically.
+# Safe to leave installed even if you never set GMAIL_CREDENTIALS_PATH.
+google-api-python-client>=2.140.0
+google-auth-httplib2>=0.2.0
+google-auth-oauthlib>=1.2.1
