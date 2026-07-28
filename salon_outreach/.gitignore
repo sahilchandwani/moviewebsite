@@ -1,5 +1,6 @@
 .env
 data/*.csv
+data/*.xlsx
 gmail_token.json
 client_secret.json
 __pycache__/
