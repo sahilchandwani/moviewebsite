@@ -56,23 +56,29 @@ code doesn't hardcode it anywhere else.
 # From a list of known handles, one per line, no leading @ needed (either works)
 python stage1_scrape.py --handles my_handles.txt --limit 20
 
-# Or discover candidates from a hashtag
-python stage1_scrape.py --hashtag dubaisalon --limit 20
-
-# Or from a location
-python stage1_scrape.py --location "Dubai, UAE" --limit 20
+# Or discover candidates from one or more hashtags (comma-separated)
+python stage1_scrape.py --hashtag "dubaisalon,dubaihairstylist" --limit 20
 ```
 
-This runs the configured Apify actors (default `apify/instagram-scraper` for
-hashtag/location discovery, `apify/instagram-profile-scraper` for profile
-details — both overridable via `.env`), pulls each salon's public bio,
-display name, and external website link, and does a lightweight best-effort
-fetch of that website's homepage to look for a phone/WhatsApp number or
-email if one wasn't already in the bio. Nothing is guessed: if a field isn't
-literally present in the bio or on the website, it's left blank in the CSV.
+This runs the configured Apify actors (default `apify/instagram-hashtag-scraper`
+for hashtag discovery, `apify/instagram-profile-scraper` for profile details —
+both overridable via `.env`), pulls each salon's public bio, display name,
+and external website link, and does a lightweight best-effort fetch of that
+website's homepage to look for a phone/WhatsApp number or email if one
+wasn't already in the bio. Nothing is guessed: if a field isn't literally
+present in the bio or on the website, it's left blank in the CSV.
 
 Output: `data/salons.csv` with columns
 `handle, name, bio, website, phone, whatsapp, email`.
+
+**Why no `--location` mode:** an earlier version of this script supported
+searching by location via `apify/instagram-scraper`'s generic `place` search
+type. Live testing found that search resolves through Google and can return
+an unrelated location's metadata instead of real posts, so it was dropped
+rather than shipped as a silently-broken feature. Use a handful of relevant
+hashtags instead (e.g. `dubaisalon`, `abudhabisalon`, `dubaihairstylist`,
+`sharjahsalon`) — this was verified to return real posts with real owner
+handles.
 
 **If a run fails validation:** Apify actor input schemas change over time.
 Open the actor's "Input" tab in the [Apify Console](https://console.apify.com/actors)
@@ -124,6 +130,12 @@ Day 4 — send these WhatsApp messages manually: ...
 plus a list of any salons flagged with missing touchpoints.
 
 ### Optional: Gmail draft creation
+
+**If you're running this via Claude Code with a Gmail connector already
+attached to the session**, you don't need any of the OAuth setup below —
+Claude can create drafts directly through that connector after Stage 2
+finishes. The OAuth path here is for running `stage3_output.py` completely
+standalone (no Claude in the loop).
 
 If `GMAIL_CREDENTIALS_PATH` and `GMAIL_TOKEN_PATH` are both set in `.env`,
 Stage 3 will instead create a **Gmail draft** (never sent automatically) for

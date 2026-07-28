@@ -3,11 +3,18 @@
 Stage 1: Scrape UAE salon Instagram data via Apify.
 
 Two input modes:
-  --handles handles.txt      One Instagram handle per line.
-  --hashtag "dubaisalon"     Discover candidate handles from a hashtag search.
-  --location "Dubai, UAE"    Discover candidate handles from a location search.
+  --handles handles.txt          One Instagram handle per line.
+  --hashtag "dubaisalon,dubaihairstylist"
+                                  Discover candidate handles from posts under
+                                  one or more hashtags (comma-separated).
 
-Both discovery modes end by running an Instagram profile scraper on the
+(A --location mode was tried and dropped: the generic Apify actor's
+location/place search resolves through Google and returns location metadata
+instead of real posts on this account, so it can't reliably find handles.
+Use one or more relevant hashtags instead, e.g. #dubaisalon, #abudhabisalon,
+#dubaihairstylist, #sharjahsalon.)
+
+Hashtag discovery ends by running an Instagram profile scraper on the
 resulting handles to pull display name, bio, external website link, and (if
 publicly visible) a phone/WhatsApp number. Results are written to
 data/salons.csv with columns: handle, name, bio, website, phone, whatsapp,
@@ -80,17 +87,16 @@ def run_apify_actor(actor_id: str, run_input: dict) -> list[dict]:
     return items.json()
 
 
-def discover_handles_by_search(query: str, search_type: str, limit: int) -> list[str]:
-    """Search a hashtag or location for candidate posts, return unique owner handles."""
-    print(f"Searching Instagram {search_type} '{query}' for up to {limit} post(s)...")
+def discover_handles_by_hashtag(hashtags: list[str], limit: int) -> list[str]:
+    """Search one or more hashtags for posts, return unique owner handles."""
+    clean_tags = [t.strip().lstrip("#") for t in hashtags if t.strip()]
+    print(f"Searching Instagram hashtag(s) {clean_tags} for up to {limit} post(s)...")
     run_input = {
-        "search": query,
-        "searchType": search_type,
-        "searchLimit": 1,
+        "hashtags": clean_tags,
         "resultsType": "posts",
         "resultsLimit": limit,
     }
-    items = run_apify_actor(config.APIFY_ACTOR_SEARCH, run_input)
+    items = run_apify_actor(config.APIFY_ACTOR_HASHTAG, run_input)
 
     handles: list[str] = []
     for item in items:
@@ -114,18 +120,24 @@ def scrape_profiles(handles: list[str], fetch_websites: bool) -> list[dict]:
         handle = item.get("username") or item.get("handle") or ""
         name = item.get("fullName") or item.get("name") or ""
         bio = (item.get("biography") or item.get("bio") or "").replace("\n", " ").strip()
-        website = (
-            item.get("externalUrl")
-            or (item.get("externalUrls") or [None])[0]
-            or item.get("website")
-            or ""
-        )
+
+        # externalUrl is a plain string; externalUrls (plural) is a list of
+        # {title, url, lynx_url, link_type} objects -- pull .url out of it.
+        external_urls = item.get("externalUrls") or []
+        first_external_url = external_urls[0].get("url", "") if external_urls and isinstance(external_urls[0], dict) else ""
+        website = item.get("externalUrl") or first_external_url or item.get("website") or ""
 
         website_text = fetch_website_text(website) if (fetch_websites and website) else ""
-        contact = extract_contact_info(bio, website_text)
+        # Some salons put a wa.me/api.whatsapp.com link directly in the
+        # "website" field instead of a real site -- pass the raw URL through
+        # too so that link itself is recognized, since fetching it as a
+        # webpage returns nothing useful.
+        contact = extract_contact_info(bio, website_text, website)
 
-        # Prefer values Instagram itself reports as structured business
-        # fields over anything regex-extracted from free text.
+        # Some Apify plans/actor versions expose structured business-contact
+        # fields (phone/email) -- prefer those over regex-extracted values
+        # when present. On a free Apify plan these are typically absent, so
+        # contact info comes from the bio/website regex fallback instead.
         phone = item.get("businessPhoneNumber") or item.get("publicPhoneNumber") or contact["phone"]
         whatsapp = item.get("whatsappNumber") or contact["whatsapp"]
         email = item.get("businessEmail") or item.get("publicEmail") or contact["email"]
@@ -148,8 +160,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--handles", help="Path to a text file with one Instagram handle per line")
-    mode.add_argument("--hashtag", help="Instagram hashtag to search (without #)")
-    mode.add_argument("--location", help="Location name/slug to search")
+    mode.add_argument("--hashtag", help="One or more hashtags to search, comma-separated (with or without #)")
     parser.add_argument(
         "--limit",
         type=int,
@@ -171,10 +182,8 @@ def main():
         with open(args.handles, encoding="utf-8") as f:
             handles = [line.strip().lstrip("@") for line in f if line.strip()]
         handles = handles[: args.limit]
-    elif args.hashtag:
-        handles = discover_handles_by_search(args.hashtag, "hashtag", args.limit)
     else:
-        handles = discover_handles_by_search(args.location, "place", args.limit)
+        handles = discover_handles_by_hashtag(args.hashtag.split(","), args.limit)
 
     if not handles:
         sys.exit("No handles found -- nothing to scrape.")

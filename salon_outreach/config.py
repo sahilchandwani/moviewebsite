@@ -18,11 +18,16 @@ OUTREACH_CSV = DATA_DIR / "outreach_output.csv"
 # --- Stage 1: Apify ---
 APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN", "")
 
-# Apify actor IDs in "owner~actor-name" form. These are the actors named in
-# the request; swap them if you're using a different scraper or a private
-# actor. Apify actor input schemas change over time -- check the actor's
-# "Input" tab in the Apify Console if a run fails with a validation error.
-APIFY_ACTOR_SEARCH = os.environ.get("APIFY_ACTOR_SEARCH", "apify~instagram-scraper")
+# Apify actor IDs in "owner~actor-name" form. Apify actor input schemas
+# change over time -- check the actor's "Input" tab in the Apify Console if
+# a run fails with a validation error.
+#
+# Note: apify/instagram-scraper's generic hashtag/place search (searchType)
+# was tested and found unreliable -- it resolves through Google and can
+# return an unrelated hashtag/location object instead of real posts. The
+# dedicated hashtag-scraper actor below was verified to return real posts
+# with owner usernames.
+APIFY_ACTOR_HASHTAG = os.environ.get("APIFY_ACTOR_HASHTAG", "apify~instagram-hashtag-scraper")
 APIFY_ACTOR_PROFILE = os.environ.get("APIFY_ACTOR_PROFILE", "apify~instagram-profile-scraper")
 
 APIFY_POLL_INTERVAL_SECONDS = int(os.environ.get("APIFY_POLL_INTERVAL_SECONDS", "5"))
