@@ -88,13 +88,25 @@ def run_apify_actor(actor_id: str, run_input: dict) -> list[dict]:
 
 
 def discover_handles_by_hashtag(hashtags: list[str], limit: int) -> list[str]:
-    """Search one or more hashtags for posts, return unique owner handles."""
+    """Search one or more hashtags for posts, return unique owner handles.
+
+    `limit` is the number of *unique salons* wanted, not raw posts -- the
+    same salon often has several posts under a hashtag, so we ask for more
+    raw posts than `limit` and dedupe down to unique owners. If we still
+    come up short, more/different hashtags usually help more than a bigger
+    raw fetch, since duplicate owners inflate the raw count without adding
+    new handles.
+    """
     clean_tags = [t.strip().lstrip("#") for t in hashtags if t.strip()]
-    print(f"Searching Instagram hashtag(s) {clean_tags} for up to {limit} post(s)...")
+    raw_fetch_limit = min(limit * 4, 500)
+    print(
+        f"Searching Instagram hashtag(s) {clean_tags} "
+        f"(fetching up to {raw_fetch_limit} posts to find {limit} unique salon(s))..."
+    )
     run_input = {
         "hashtags": clean_tags,
         "resultsType": "posts",
-        "resultsLimit": limit,
+        "resultsLimit": raw_fetch_limit,
     }
     items = run_apify_actor(config.APIFY_ACTOR_HASHTAG, run_input)
 
@@ -107,6 +119,14 @@ def discover_handles_by_hashtag(hashtags: list[str], limit: int) -> list[str]:
         )
         if handle and handle not in handles:
             handles.append(handle)
+        if len(handles) >= limit:
+            break
+
+    if len(handles) < limit:
+        print(
+            f"Note: only found {len(handles)} unique handle(s) from {len(items)} post(s) -- "
+            "try adding more hashtags or raising the raw fetch further."
+        )
     return handles[:limit]
 
 
