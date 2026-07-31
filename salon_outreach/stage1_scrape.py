@@ -35,7 +35,7 @@ from pathlib import Path
 import requests
 
 import config
-from utils import extract_contact_info, fetch_website_text, write_csv
+from utils import extract_contact_info, fetch_website_text, read_csv, write_csv
 
 APIFY_BASE = "https://api.apify.com/v2"
 TERMINAL_STATUSES = ("SUCCEEDED", "FAILED", "TIMED-OUT", "ABORTED")
@@ -87,7 +87,7 @@ def run_apify_actor(actor_id: str, run_input: dict) -> list[dict]:
     return items.json()
 
 
-def discover_handles_by_hashtag(hashtags: list[str], limit: int) -> list[str]:
+def discover_handles_by_hashtag(hashtags: list[str], limit: int, exclude: set[str] = frozenset()) -> list[str]:
     """Search one or more hashtags for posts, return unique owner handles.
 
     `limit` is the number of *unique salons* wanted, not raw posts -- the
@@ -96,12 +96,15 @@ def discover_handles_by_hashtag(hashtags: list[str], limit: int) -> list[str]:
     come up short, more/different hashtags usually help more than a bigger
     raw fetch, since duplicate owners inflate the raw count without adding
     new handles.
+
+    `exclude` skips handles already collected in a previous run, so a
+    second batch doesn't hand you the same salons again.
     """
     clean_tags = [t.strip().lstrip("#") for t in hashtags if t.strip()]
     raw_fetch_limit = min(limit * 4, 500)
     print(
         f"Searching Instagram hashtag(s) {clean_tags} "
-        f"(fetching up to {raw_fetch_limit} posts to find {limit} unique salon(s))..."
+        f"(fetching up to {raw_fetch_limit} posts to find {limit} unique new salon(s))..."
     )
     run_input = {
         "hashtags": clean_tags,
@@ -117,14 +120,14 @@ def discover_handles_by_hashtag(hashtags: list[str], limit: int) -> list[str]:
             or item.get("username")
             or (item.get("owner") or {}).get("username")
         )
-        if handle and handle not in handles:
+        if handle and handle not in handles and handle not in exclude:
             handles.append(handle)
         if len(handles) >= limit:
             break
 
     if len(handles) < limit:
         print(
-            f"Note: only found {len(handles)} unique handle(s) from {len(items)} post(s) -- "
+            f"Note: only found {len(handles)} unique new handle(s) from {len(items)} post(s) -- "
             "try adding more hashtags or raising the raw fetch further."
         )
     return handles[:limit]
@@ -193,17 +196,32 @@ def main():
         help="Skip fetching each salon's own website (faster, but misses phone/email only listed there)",
     )
     parser.add_argument("--out", default=str(config.SALONS_CSV), help="Output CSV path")
+    parser.add_argument(
+        "--exclude",
+        action="append",
+        default=[],
+        help="CSV file(s) from a previous run whose handles should be skipped "
+        "(e.g. --exclude data/salons.csv). Can be passed multiple times.",
+    )
     args = parser.parse_args()
 
     if args.limit > 100:
         sys.exit("Refusing to scrape more than 100 profiles in one run -- keep volume modest.")
 
+    exclude_handles: set[str] = set()
+    for path in args.exclude:
+        for row in read_csv(path):
+            if row.get("handle"):
+                exclude_handles.add(row["handle"].lstrip("@"))
+    if exclude_handles:
+        print(f"Excluding {len(exclude_handles)} already-known handle(s) from previous run(s).")
+
     if args.handles:
         with open(args.handles, encoding="utf-8") as f:
             handles = [line.strip().lstrip("@") for line in f if line.strip()]
-        handles = handles[: args.limit]
+        handles = [h for h in handles if h not in exclude_handles][: args.limit]
     else:
-        handles = discover_handles_by_hashtag(args.hashtag.split(","), args.limit)
+        handles = discover_handles_by_hashtag(args.hashtag.split(","), args.limit, exclude=exclude_handles)
 
     if not handles:
         sys.exit("No handles found -- nothing to scrape.")

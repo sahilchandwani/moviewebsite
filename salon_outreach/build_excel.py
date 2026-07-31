@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-"""One-off: convert data/salons.csv into a nicely formatted data/salons.xlsx
-so it can be handed to another Claude conversation (or a person) to draft
-messages from. Not part of the normal 3-stage pipeline."""
+"""One-off: convert a salons CSV into a nicely formatted .xlsx so it can be
+handed to another Claude conversation (or a person) to draft messages from.
+Not part of the normal 3-stage pipeline.
+
+Usage: python build_excel.py [src.csv] [out.xlsx]
+Defaults to data/salons.csv -> data/salons.xlsx.
+"""
 import csv
+import sys
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-SRC = "data/salons.csv"
-OUT = "data/salons.xlsx"
+SRC = sys.argv[1] if len(sys.argv) > 1 else "data/salons.csv"
+OUT = sys.argv[2] if len(sys.argv) > 2 else "data/salons.xlsx"
 
 HEADER_LABELS = {
     "handle": "Instagram Handle",
